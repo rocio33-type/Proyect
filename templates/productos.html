@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabubuStore - Productos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/estilos.css') }}" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar-lb">
+        <a href="/productos" class="navbar-brand-lb">Labubu<span>Store</span></a>
+        <div>
+            <span style="font-size:0.85rem; opacity:0.7; margin-right:14px;">{{ usuario_nombre }}</span>
+            <a href="/logout" class="nav-link-lb">Cerrar sesion</a>
+        </div>
+    </nav>
+
+    <div class="contenido-lb">
+        <div class="panel-lb">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+                <h2 style="margin:0;">Productos</h2>
+                <button onclick="abrirModal()">+ Nuevo producto</button>
+            </div>
+
+            <table class="tabla-lb">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in productos %}
+                    <tr>
+                        <td>
+                            {% if p.4 %}
+                                <img src="{{ url_for('static', filename='images/productos/' + p.4) }}" alt="{{ p.1 }}" style="width:48px; height:48px; object-fit:cover; border-radius:10px;">
+                            {% else %}
+                                <span style="font-size:0.78rem; opacity:0.6;">Sin imagen</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.0 }}</td>
+                        <td>{{ p.1 }}</td>
+                        <td>${{ "%.2f"|format(p.2) }}</td>
+                        <td>{{ p.3 }}</td>
+                        <td>
+                            {% if p.5 == 1 %}
+                                <span class="badge-activo">Activo</span>
+                            {% else %}
+                                <span class="badge-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-sm-lb btn-azul" onclick='abrirModal({{ p.0 }}, {{ p.1|tojson }}, {{ p.2 }}, {{ p.3 }})'>Editar</button>
+                            {% if p.5 == 1 %}
+                                <button class="btn-sm-lb btn-gris" onclick="cambiarEstado({{ p.0 }}, 0)">Desactivar</button>
+                            {% else %}
+                                <button class="btn-sm-lb btn-azul" onclick="cambiarEstado({{ p.0 }}, 1)">Activar</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" style="text-align:center; opacity:0.6;">Todavia no hay productos. Crea el primero.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3 id="modalTitulo">Nuevo producto</h3>
+            <form id="formProducto">
+                <input type="hidden" id="idProducto">
+
+                <label>Nombre</label>
+                <input type="text" id="cNombre" required>
+
+                <label>Precio</label>
+                <input type="number" step="0.01" id="fPrecio" required>
+
+                <label>Stock</label>
+                <input type="number" id="iStock" required>
+
+                <label>Imagen</label>
+                <input type="file" id="cImagen" accept="image/*">
+                <small id="notaImagen" style="display:none; opacity:0.6;">Deja vacio si no quieres cambiar la imagen actual.</small>
+
+                <div class="modal-footer-lb">
+                    <button type="button" class="btn-gris" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var modalOverlay = document.getElementById('modalOverlay');
+        var formProducto = document.getElementById('formProducto');
+        var notaImagen = document.getElementById('notaImagen');
+
+        function abrirModal(id, nombre, precio, stock){
+            var esEdicion = (id !== undefined);
+            document.getElementById('modalTitulo').textContent = esEdicion ? 'Editar producto' : 'Nuevo producto';
+            document.getElementById('idProducto').value = esEdicion ? id : '';
+            document.getElementById('cNombre').value = esEdicion ? nombre : '';
+            document.getElementById('fPrecio').value = esEdicion ? precio : '';
+            document.getElementById('iStock').value = esEdicion ? stock : '';
+            document.getElementById('cImagen').value = '';
+            notaImagen.style.display = esEdicion ? 'block' : 'none';
+            modalOverlay.classList.add('activo');
+        }
+
+        function cerrarModal(){
+            modalOverlay.classList.remove('activo');
+        }
+
+        formProducto.addEventListener('submit', function(e){
+            e.preventDefault();
+
+            var idProducto = document.getElementById('idProducto').value;
+            var datos = new FormData();
+            datos.append('cNombre', document.getElementById('cNombre').value);
+            datos.append('fPrecio', document.getElementById('fPrecio').value);
+            datos.append('iStock', document.getElementById('iStock').value);
+
+            var archivo = document.getElementById('cImagen').files[0];
+            if(archivo){
+                datos.append('cImagen', archivo);
+            }
+
+            var url = idProducto ? '/productos/editar/' + idProducto : '/productos/crear';
+
+            fetch(url, { method: 'POST', body: datos })
+                .then(function(resp){ return resp.json(); })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                })
+                .catch(function(err){
+                    alert('Ocurrio un error de conexion.');
+                });
+        });
+
+        function cambiarEstado(id, nuevoEstado){
+            var accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
+            if(!confirm('Seguro que deseas ' + accion + ' este producto?')) return;
+
+            var datos = new FormData();
+            datos.append('bActivo', nuevoEstado);
+
+            fetch('/productos/estado/' + id, { method: 'POST', body: datos })
+                .then(function(resp){ return resp.json(); })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                });
+        }
+
+        modalOverlay.addEventListener('click', function(e){
+            if(e.target === modalOverlay) cerrarModal();
+        });
+    </script>
+
+</body>
+</html>

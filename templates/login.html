@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabubuStore - Iniciar sesion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/estilos.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <h1 class="titulo">LabubuStore</h1>
+            <p class="subtitulo">Panel de administracion de productos</p>
+
+            {% if error %}
+            <div class="login-error">{{ error }}</div>
+            {% endif %}
+
+            <form action="/login" method="POST">
+                <label>Usuario</label>
+                <input type="text" name="cUsuario" class="form-control" autocomplete="off" required>
+
+                <label>Contraseña</label>
+                <input type="password" name="cPassword" class="form-control" required>
+
+                <button type="submit">Iniciar sesion</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
