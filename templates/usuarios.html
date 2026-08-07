@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabubuStore - Usuarios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/estilos.css') }}" rel="stylesheet">
+</head>
+<body>
+
+    {% include '_nav.html' with context %}
+
+    <div class="contenido-lb">
+        <div class="panel-lb">
+            <div class="panel-header-lb">
+                <h2 style="margin:0;">Usuarios</h2>
+                <button onclick="abrirModal()">+ Nuevo usuario</button>
+            </div>
+
+            <table class="tabla-lb">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for u in usuarios %}
+                    <tr>
+                        <td>{{ u.0 }}</td>
+                        <td>{{ u.1 }}</td>
+                        <td>{{ u.2 or '-' }}</td>
+                        <td>{{ u.3 or '-' }}</td>
+                        <td>
+                            {% if u.4 == 1 %}
+                                <span class="badge-activo">Activo</span>
+                            {% else %}
+                                <span class="badge-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-sm-lb btn-azul" onclick='abrirModal({{ u.0 }}, {{ u.1|tojson }}, {{ u.2|tojson }}, {{ u.3|tojson }})'>Editar</button>
+                            {% if u.4 == 1 %}
+                                <button class="btn-sm-lb btn-gris" onclick="cambiarEstado({{ u.0 }}, 0)">Desactivar</button>
+                            {% else %}
+                                <button class="btn-sm-lb btn-azul" onclick="cambiarEstado({{ u.0 }}, 1)">Activar</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" style="text-align:center; opacity:0.6;">Todavia no hay usuarios.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3 id="modalTitulo">Nuevo usuario</h3>
+            <form id="formUsuario">
+                <input type="hidden" id="idUsuario">
+
+                <label>Usuario (para iniciar sesion)</label>
+                <input type="text" id="cUsuario" required>
+
+                <label>Contraseña</label>
+                <input type="password" id="cPassword">
+                <small id="notaPassword" style="display:none; opacity:0.6;">Deja vacio si no quieres cambiar la contraseña actual.</small>
+
+                <label>Nombre</label>
+                <input type="text" id="cNombre">
+
+                <label>Correo</label>
+                <input type="email" id="cCorreo">
+
+                <div class="modal-footer-lb">
+                    <button type="button" class="btn-gris" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var modalOverlay = document.getElementById('modalOverlay');
+        var formUsuario = document.getElementById('formUsuario');
+        var notaPassword = document.getElementById('notaPassword');
+        var campoPassword = document.getElementById('cPassword');
+
+        function abrirModal(id, usuario, nombre, correo){
+            var esEdicion = (id !== undefined);
+            document.getElementById('modalTitulo').textContent = esEdicion ? 'Editar usuario' : 'Nuevo usuario';
+            document.getElementById('idUsuario').value = esEdicion ? id : '';
+            document.getElementById('cUsuario').value = esEdicion ? usuario : '';
+            document.getElementById('cNombre').value = esEdicion ? (nombre || '') : '';
+            document.getElementById('cCorreo').value = esEdicion ? (correo || '') : '';
+            campoPassword.value = '';
+            campoPassword.required = !esEdicion;
+            notaPassword.style.display = esEdicion ? 'block' : 'none';
+            modalOverlay.classList.add('activo');
+        }
+
+        function cerrarModal(){
+            modalOverlay.classList.remove('activo');
+        }
+
+        formUsuario.addEventListener('submit', function(e){
+            e.preventDefault();
+            var idUsuario = document.getElementById('idUsuario').value;
+            var datos = new FormData();
+            datos.append('cUsuario', document.getElementById('cUsuario').value);
+            datos.append('cPassword', campoPassword.value);
+            datos.append('cNombre', document.getElementById('cNombre').value);
+            datos.append('cCorreo', document.getElementById('cCorreo').value);
+
+            var url = idUsuario ? '/usuarios/editar/' + idUsuario : '/usuarios/crear';
+
+            fetch(url, { method: 'POST', body: datos })
+                .then(function(resp){
+                    if(resp.redirected){ window.location.href = resp.url; throw new Error('sesion-expirada'); }
+                    return resp.json();
+                })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                })
+                .catch(function(err){
+                    if(err.message !== 'sesion-expirada') alert('Ocurrio un error de conexion.');
+                });
+        });
+
+        function cambiarEstado(id, nuevoEstado){
+            var accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
+            if(!confirm('Seguro que deseas ' + accion + ' este usuario?')) return;
+
+            var datos = new FormData();
+            datos.append('bActivo', nuevoEstado);
+
+            fetch('/usuarios/estado/' + id, { method: 'POST', body: datos })
+                .then(function(resp){
+                    if(resp.redirected){ window.location.href = resp.url; throw new Error('sesion-expirada'); }
+                    return resp.json();
+                })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                })
+                .catch(function(err){
+                    if(err.message !== 'sesion-expirada') alert('Ocurrio un error de conexion.');
+                });
+        }
+
+        modalOverlay.addEventListener('click', function(e){
+            if(e.target === modalOverlay) cerrarModal();
+        });
+    </script>
+
+</body>
+</html>

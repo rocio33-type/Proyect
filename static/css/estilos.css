@@ -35,6 +35,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 .navbar-brand-lb {
     font-family: 'Fredoka', Arial, sans-serif;
@@ -44,6 +46,15 @@ body {
     text-decoration: none;
 }
 .navbar-brand-lb span { color: var(--sky); }
+.nav-links-lb {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.nav-user-lb {
+    display: flex;
+    align-items: center;
+}
 .nav-link-lb {
     color: var(--ink);
     font-weight: 500;
@@ -55,6 +66,14 @@ body {
 .nav-link-lb:hover {
     background: var(--mint);
     color: var(--pink-dark);
+}
+.nav-link-lb.activo {
+    background: var(--pink);
+    color: var(--white);
+}
+.nav-link-lb.activo:hover {
+    background: var(--pink-dark);
+    color: var(--white);
 }
 
 
@@ -112,6 +131,29 @@ body {
     font-size: 0.85rem;
     margin-bottom: 16px;
     text-align: center;
+}
+.login-exito {
+    background: var(--mint);
+    color: #1f5c3d;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    text-align: center;
+}
+.login-link-crear {
+    text-align: center;
+    font-size: 0.85rem;
+    margin-top: 18px;
+    margin-bottom: 0;
+}
+.login-link-crear a {
+    color: var(--pink-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+.login-link-crear a:hover {
+    text-decoration: underline;
 }
 
 
@@ -227,9 +269,27 @@ button:hover, .btn:hover {
     padding: 9px 12px;
     font-family: 'Poppins', Arial, sans-serif;
 }
-.modal-box input:focus {
+.modal-box input:focus,
+.modal-box select:focus {
     outline: none;
     border-color: var(--pink);
+}
+.modal-box select {
+    width: 100%;
+    border: 2px solid var(--mint);
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: var(--white);
+    color: var(--ink);
+}
+.panel-header-lb {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 .modal-footer-lb {
     display: flex;

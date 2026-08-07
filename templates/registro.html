@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabubuStore - Iniciar sesion</title>
+    <title>LabubuStore - Crear cuenta</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/estilos.css') }}" rel="stylesheet">
@@ -12,27 +12,33 @@
     <div class="login-wrapper">
         <div class="login-card">
             <h1 class="titulo">LabubuStore</h1>
-            <p class="subtitulo">Panel de administracion</p>
+            <p class="subtitulo">Crear usuario y contraseña</p>
 
             {% if error %}
             <div class="login-error">{{ error }}</div>
             {% endif %}
-            {% if exito %}
-            <div class="login-exito">{{ exito }}</div>
-            {% endif %}
 
-            <form action="/login" method="POST">
+            <form action="/registro" method="POST">
                 <label>Usuario</label>
-                <input type="text" name="cUsuario" class="form-control" autocomplete="off" required>
+                <input type="text" name="cUsuario" class="form-control" autocomplete="off" value="{{ cUsuario or '' }}" required>
+
+                <label>Nombre completo</label>
+                <input type="text" name="cNombre" class="form-control" value="{{ cNombre or '' }}">
+
+                <label>Correo</label>
+                <input type="email" name="cCorreo" class="form-control" value="{{ cCorreo or '' }}">
 
                 <label>Contraseña</label>
                 <input type="password" name="cPassword" class="form-control" required>
 
-                <button type="submit">Iniciar sesion</button>
+                <label>Confirmar contraseña</label>
+                <input type="password" name="cPassword2" class="form-control" required>
+
+                <button type="submit">Crear cuenta</button>
             </form>
 
             <p class="login-link-crear">
-                ¿No tienes cuenta? <a href="/registro">Crear usuario y contraseña</a>
+                <a href="/login">Ya tengo cuenta, iniciar sesion</a>
             </p>
         </div>
     </div>

@@ -1,0 +1,13 @@
+<nav class="navbar-lb">
+    <a href="/productos" class="navbar-brand-lb">Labubu<span>Store</span></a>
+    <div class="nav-links-lb">
+        <a href="/productos" class="nav-link-lb {{ 'activo' if activo == 'productos' }}">Productos</a>
+        <a href="/categorias" class="nav-link-lb {{ 'activo' if activo == 'categorias' }}">Categorias</a>
+        <a href="/proveedores" class="nav-link-lb {{ 'activo' if activo == 'proveedores' }}">Proveedores</a>
+        <a href="/usuarios" class="nav-link-lb {{ 'activo' if activo == 'usuarios' }}">Usuarios</a>
+    </div>
+    <div class="nav-user-lb">
+        <span style="font-size:0.85rem; opacity:0.7; margin-right:14px;">{{ usuario_nombre }}</span>
+        <a href="/logout" class="nav-link-lb">Cerrar sesion</a>
+    </div>
+</nav>

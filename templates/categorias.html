@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabubuStore - Categorias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/estilos.css') }}" rel="stylesheet">
+</head>
+<body>
+
+    {% include '_nav.html' with context %}
+
+    <div class="contenido-lb">
+        <div class="panel-lb">
+            <div class="panel-header-lb">
+                <h2 style="margin:0;">Categorias</h2>
+                <button onclick="abrirModal()">+ Nueva categoria</button>
+            </div>
+
+            <table class="tabla-lb">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripcion</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in categorias %}
+                    <tr>
+                        <td>{{ c.0 }}</td>
+                        <td>{{ c.1 }}</td>
+                        <td>{{ c.2 or '-' }}</td>
+                        <td>
+                            {% if c.3 == 1 %}
+                                <span class="badge-activo">Activo</span>
+                            {% else %}
+                                <span class="badge-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-sm-lb btn-azul" onclick='abrirModal({{ c.0 }}, {{ c.1|tojson }}, {{ c.2|tojson }})'>Editar</button>
+                            {% if c.3 == 1 %}
+                                <button class="btn-sm-lb btn-gris" onclick="cambiarEstado({{ c.0 }}, 0)">Desactivar</button>
+                            {% else %}
+                                <button class="btn-sm-lb btn-azul" onclick="cambiarEstado({{ c.0 }}, 1)">Activar</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" style="text-align:center; opacity:0.6;">Todavia no hay categorias. Crea la primera.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3 id="modalTitulo">Nueva categoria</h3>
+            <form id="formCategoria">
+                <input type="hidden" id="idCategoria">
+
+                <label>Nombre</label>
+                <input type="text" id="cNombre" required>
+
+                <label>Descripcion</label>
+                <input type="text" id="cDescripcion">
+
+                <div class="modal-footer-lb">
+                    <button type="button" class="btn-gris" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var modalOverlay = document.getElementById('modalOverlay');
+        var formCategoria = document.getElementById('formCategoria');
+
+        function abrirModal(id, nombre, descripcion){
+            var esEdicion = (id !== undefined);
+            document.getElementById('modalTitulo').textContent = esEdicion ? 'Editar categoria' : 'Nueva categoria';
+            document.getElementById('idCategoria').value = esEdicion ? id : '';
+            document.getElementById('cNombre').value = esEdicion ? nombre : '';
+            document.getElementById('cDescripcion').value = esEdicion ? (descripcion || '') : '';
+            modalOverlay.classList.add('activo');
+        }
+
+        function cerrarModal(){
+            modalOverlay.classList.remove('activo');
+        }
+
+        formCategoria.addEventListener('submit', function(e){
+            e.preventDefault();
+            var idCategoria = document.getElementById('idCategoria').value;
+            var datos = new FormData();
+            datos.append('cNombre', document.getElementById('cNombre').value);
+            datos.append('cDescripcion', document.getElementById('cDescripcion').value);
+
+            var url = idCategoria ? '/categorias/editar/' + idCategoria : '/categorias/crear';
+
+            fetch(url, { method: 'POST', body: datos })
+                .then(function(resp){
+                    if(resp.redirected){ window.location.href = resp.url; throw new Error('sesion-expirada'); }
+                    return resp.json();
+                })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                })
+                .catch(function(err){
+                    if(err.message !== 'sesion-expirada') alert('Ocurrio un error de conexion.');
+                });
+        });
+
+        function cambiarEstado(id, nuevoEstado){
+            var accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
+            if(!confirm('Seguro que deseas ' + accion + ' esta categoria?')) return;
+
+            var datos = new FormData();
+            datos.append('bActivo', nuevoEstado);
+
+            fetch('/categorias/estado/' + id, { method: 'POST', body: datos })
+                .then(function(resp){
+                    if(resp.redirected){ window.location.href = resp.url; throw new Error('sesion-expirada'); }
+                    return resp.json();
+                })
+                .then(function(data){
+                    alert(data.Resultado);
+                    location.reload();
+                })
+                .catch(function(err){
+                    if(err.message !== 'sesion-expirada') alert('Ocurrio un error de conexion.');
+                });
+        }
+
+        modalOverlay.addEventListener('click', function(e){
+            if(e.target === modalOverlay) cerrarModal();
+        });
+    </script>
+
+</body>
+</html>
